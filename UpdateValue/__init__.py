@@ -3,7 +3,10 @@ from azure.data.tables import TableServiceClient
 import os
 import logging
 
+logger = logging.getLogger("azure.functions")
+
 def main(req: func.HttpRequest) -> func.HttpResponse:
+    logger.info("Function UpdateValue triggered")
     try:
         table_name = "VisitorTable"
         conn_str = os.environ["AZURE_STORAGE_CONNECTION_STRING"]
@@ -25,5 +28,5 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         return func.HttpResponse("Value updated", status_code=200)
 
     except Exception as e:
-        logging.error("An error occurred.", exc_info=True)
+        logger.error("An error occurred.", exc_info=True)
         return func.HttpResponse(f"Error: {str(e)}", status_code=500)
