@@ -1,6 +1,7 @@
 import azure.functions as func
 from azure.data.tables import TableServiceClient
 import os
+import logging
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
     try:
@@ -24,4 +25,5 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         return func.HttpResponse("Value updated", status_code=200)
 
     except Exception as e:
+        logging.error("An error occurred.", exc_info=True)
         return func.HttpResponse(f"Error: {str(e)}", status_code=500)
