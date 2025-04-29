@@ -1,0 +1,27 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "functionAppName": {
+            "value": "pzachcomfn"
+        },
+        "location": {
+            "value": "Canada East" 
+        },
+        "appServicePlanSkuName": {
+            "value": "Y1" 
+        },
+        "appServicePlanSkuTier": {
+            "value": "Dynamic"
+        },
+        "storageAccountType": {
+            "value": "Standard_LRS"
+        },
+        "pythonVersion": {
+            "value": "3.11"
+        },
+        "corsAllowedOrigins": {
+             "value": [ "*" ]
+        }
+    }
+}
