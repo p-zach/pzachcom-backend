@@ -60,8 +60,8 @@
         }
     },
     "variables": {
-        "appServicePlanName": "[concat('ASP-', parameters('functionAppName'))]",
-        "storageAccountName": "[concat('st', uniqueString(resourceGroup().id), parameters('functionAppName'))]",
+        "appServicePlanName": "ASP-pzachrg-a700",
+        "storageAccountName": "pzachrgb450",
         "applicationInsightsName": "[parameters('functionAppName')]"
     },
     "resources": [
