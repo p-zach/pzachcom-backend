@@ -78,7 +78,7 @@ jobs:
         # subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION_ID }} # Optional: Explicitly set if needed
         resourceGroupName: ${{ env.AZURE_RESOURCE_GROUP }}
         template: ${{ env.INFRA_TEMPLATE_PATH }}
-        parameters: ${{ env.INFRA_PARAMETERS_PATH }} functionAppName=${{ env.FUNCTIONAPP_NAME }} location=${{ env.AZURE_LOCATION }} # Override specific parameters if needed
+        parameters: ${{ env.INFRA_PARAMETERS_PATH }}
         failOnStdErr: false
         deploymentMode: Incremental # Safest mode
 
