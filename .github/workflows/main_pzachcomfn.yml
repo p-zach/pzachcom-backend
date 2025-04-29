@@ -63,9 +63,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: functionapp-artifact-${{ github.run_number }}
-        path: |
-          ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
-          !${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}/.venv # Exclude venv if created
+        path: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
 
   deploy_infrastructure:
     runs-on: ubuntu-latest
