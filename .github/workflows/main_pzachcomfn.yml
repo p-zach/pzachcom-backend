@@ -100,6 +100,38 @@ jobs:
         name: ${{ needs.build.outputs.artifact_name }}
         path: ./deploy_package
 
+    # --- START DETAILED VERIFICATION STEP ---
+    - name: Verify Contents of Deployment Package (Pre-built Focus)
+      run: |
+        echo "--- Listing Root Contents of ./deploy_package ---"
+        ls -l ./deploy_package
+        echo "--- Checking for .python_packages directory ---"
+        if [ -d "./deploy_package/.python_packages" ]; then
+          echo ".python_packages directory FOUND."
+          echo "--- Listing Contents of .python_packages/lib/python${{ env.PYTHON_VERSION }}/site-packages ---"
+          # List top-level packages installed
+          ls -l ./deploy_package/.python_packages/lib/python${{ env.PYTHON_VERSION }}/site-packages/
+          echo "--- Checking specifically for azure/data ---"
+          # Check if the specific azure/data path exists
+          if [ -d "./deploy_package/.python_packages/lib/python${{ env.PYTHON_VERSION }}/site-packages/azure/data" ]; then
+            echo ">>> SUCCESS: azure/data directory FOUND within site-packages."
+            echo "--- Listing contents of azure/data ---"
+            ls -l ./deploy_package/.python_packages/lib/python${{ env.PYTHON_VERSION }}/site-packages/azure/data/
+          else
+            echo ">>> FAILURE: azure/data directory NOT FOUND in site-packages."
+            echo ">>> Check the 'pip install --target' command in the 'build' job logs."
+          fi
+        else
+          echo ">>> FAILURE: .python_packages directory NOT FOUND."
+          echo ">>> Check the 'pip install --target' command and 'upload-artifact' step in the 'build' job."
+        fi
+        echo "--- Done Verifying ---"
+      shell: bash
+      # Make sure PYTHON_VERSION env var is available if needed, or hardcode 3.11 if certain
+      env:
+        PYTHON_VERSION: ${{ env.PYTHON_VERSION }}
+    # --- END DETAILED VERIFICATION STEP ---
+
     - name: Login to Azure
       uses: azure/login@v1
       with:
