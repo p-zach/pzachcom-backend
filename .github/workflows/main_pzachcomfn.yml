@@ -37,19 +37,19 @@ jobs:
     - name: Install Dependencies Using Pip
       shell: bash
       run: |
-        pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
-        python -m venv --copies .venv # Create virtual env to isolate packages
-        source .venv/bin/activate
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        # No target needed if we zip the whole dir including .venv or let Oryx run
-        deactivate
-        popd
-        # Alternative: Install into target folder if disabling Oryx build later
         # pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+        # python -m venv --copies .venv # Create virtual env to isolate packages
+        # source .venv/bin/activate
         # python -m pip install --upgrade pip
-        # pip install -r requirements.txt --target=".python_packages/lib/python${{ env.PYTHON_VERSION }}/site-packages"
+        # pip install -r requirements.txt
+        # # No target needed if we zip the whole dir including .venv or let Oryx run
+        # deactivate
         # popd
+        # Alternative: Install into target folder if disabling Oryx build later
+        pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt --target=".python_packages/lib/python${{ env.PYTHON_VERSION }}/site-packages"
+        popd
 
     - name: Archive Function App Artifact
       uses: actions/upload-artifact@v4
@@ -112,11 +112,11 @@ jobs:
         package: ./deploy_package
         # publish-profile: # NOT NEEDED when using azure/login with service principal
         # === Option 1: Let Azure build using Oryx (Simpler) ===
-        scm-do-build-during-deployment: true
-        enable-oryx-build: true
+        # scm-do-build-during-deployment: true
+        # enable-oryx-build: true
         # === Option 2: Deploy pre-built package (Requires pip install --target in build job) ===
-        # scm-do-build-during-deployment: false
-        # enable-oryx-build: false
+        scm-do-build-during-deployment: false
+        enable-oryx-build: false
 
     - name: Logout from Azure
       run: |
