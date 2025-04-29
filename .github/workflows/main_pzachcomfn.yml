@@ -49,6 +49,8 @@ jobs:
         pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
         python -m pip install --upgrade pip
         pip install -r requirements.txt --target=".python_packages/lib/python${{ env.PYTHON_VERSION }}/site-packages"
+        ls -lR .python_packages
+        ls -lR .
         popd
 
     - name: Archive Function App Artifact
@@ -104,7 +106,7 @@ jobs:
     - name: Verify Contents of Deployment Package (Pre-built Focus)
       run: |
         echo "--- Listing Root Contents of ./deploy_package ---"
-        ls -l ./deploy_package
+        ls -l .
         echo "--- Checking for .python_packages directory ---"
         if [ -d "./deploy_package/.python_packages" ]; then
           echo ".python_packages directory FOUND."
