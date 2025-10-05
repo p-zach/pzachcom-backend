@@ -10,9 +10,9 @@ from azure.storage.blob import (
     BlobSasPermissions
 )
 
-app = func.FunctionApp()
+app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 
-@app.route(route="random-photo")
+@app.route(route="random-photo", methods=["GET"])
 def random_photo(req: func.HttpRequest) -> func.HttpResponse:
     logging.info("Python HTTP trigger: GetRandomPhoto")
 
@@ -63,4 +63,4 @@ def random_photo(req: func.HttpRequest) -> func.HttpResponse:
 
     except Exception as e:
         logging.error(f"Error: {e}")
-        return func.HttpResponse("Internal error", status_code=500)
+        return func.HttpResponse(f"Internal error: {e}", status_code=500)
