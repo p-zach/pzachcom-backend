@@ -58,7 +58,12 @@ def random_photo(req: func.HttpRequest) -> func.HttpResponse:
         # redirect
         return func.HttpResponse(
             status_code=302,
-            headers={"Location": url}
+            headers={
+                "Location": url,
+                "Cache-Control": "no-cache, no-store, must-revalidate",
+                "Pragma": "no-cache",
+                "Expires": "0"
+            }
         )
 
     except Exception as e:
