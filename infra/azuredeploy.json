@@ -161,7 +161,7 @@
                         },
                         {
                             "name": "PHOTO_STORAGE_CONNECTION",
-                            "value": "[reference(resourceId('Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), parameters('photoConnectionStringSecretName')), '2022-07-01').secretUriWithVersion]"
+                            "value": "[reference(resourceId('Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), parameters('photoConnectionStringSecretName')), '2015-06-01').value]"
                         }
                     ],
                     "ftpsState": "FtpsOnly", 
