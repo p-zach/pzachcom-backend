@@ -1,13 +1,10 @@
 import logging
 import os
 import random
-from datetime import datetime, timedelta
 
 import azure.functions as func
 from azure.storage.blob import (
     BlobServiceClient,
-    generate_blob_sas,
-    BlobSasPermissions
 )
 
 app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
@@ -19,8 +16,6 @@ def random_photo(req: func.HttpRequest) -> func.HttpResponse:
     try:
         conn_str = os.getenv("PHOTO_STORAGE_CONNECTION")
         container_name = os.getenv("PHOTO_CONTAINER", "photos")
-        account_name = os.getenv("STORAGE_ACCOUNT_NAME")
-        account_key = os.getenv("STORAGE_ACCOUNT_KEY")
 
         if not conn_str:
             return func.HttpResponse(
@@ -40,26 +35,14 @@ def random_photo(req: func.HttpRequest) -> func.HttpResponse:
         chosen = random.choice(blob_list)
         blob_client = container_client.get_blob_client(chosen)
 
-        # if account creds are provided, generate SAS
-        if account_name and account_key:
-            sas_token = generate_blob_sas(
-                account_name=account_name,
-                container_name=container_name,
-                blob_name=chosen,
-                account_key=account_key,
-                permission=BlobSasPermissions(read=True),
-                expiry=datetime.utcnow() + timedelta(minutes=15)
-            )
-            url = f"{blob_client.url}?{sas_token}"
-        else:
-            # public container case
-            url = blob_client.url
+        # add a random query param to break caching
+        url_with_nonce = f"{blob_client.url}&_={random.randint(0, 999999)}"
 
         # redirect
         return func.HttpResponse(
             status_code=302,
             headers={
-                "Location": url,
+                "Location": url_with_nonce,
                 "Cache-Control": "no-cache, no-store, must-revalidate",
                 "Pragma": "no-cache",
                 "Expires": "0"
