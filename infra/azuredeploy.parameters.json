@@ -22,6 +22,12 @@
         },
         "corsAllowedOrigins": {
              "value": [ "*" ]
+        },
+        "keyVaultName": {
+            "value": "pzachkv"
+        },
+        "photoConnectionStringSecretName": {
+            "value": "photo-storage-account-connection-string"
         }
     }
 }

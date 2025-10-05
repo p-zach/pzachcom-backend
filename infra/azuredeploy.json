@@ -57,6 +57,18 @@
             "metadata": {
                 "description": "Allowed origins for CORS."
             }
+        },
+        "keyVaultName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of the Azure Key Vault that stores the photos."
+            }
+        },
+        "photoConnectionStringSecretName": {
+            "type": "string",
+            "metadata": {
+                "description": "Name of the photo storage account connection string secret in the vault keyVaultName."
+            }
         }
     },
     "variables": {
@@ -146,6 +158,10 @@
                         {
                             "name": "APPLICATIONINSIGHTS_CONNECTION_STRING",
                             "value": "[reference(resourceId('Microsoft.Insights/components', variables('applicationInsightsName')), '2020-02-02').connectionString]"
+                        },
+                        {
+                            "name": "PHOTO_STORAGE_CONNECTION",
+                            "value": "[reference(resourceId('Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), parameters('photoConnectionStringSecretName')), '2022-07-01').secretUriWithVersion]"
                         }
                     ],
                     "ftpsState": "FtpsOnly", 
