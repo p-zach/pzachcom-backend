@@ -18,7 +18,7 @@
             "value": "Standard_LRS"
         },
         "pythonVersion": {
-            "value": "3.11"
+            "value": "3.12"
         },
         "corsAllowedOrigins": {
              "value": [ "*" ]

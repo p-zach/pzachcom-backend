@@ -14,7 +14,7 @@ env:
 
   # === Code Configuration ===
   AZURE_FUNCTIONAPP_PACKAGE_PATH: '.'           # Path to your function app code root
-  PYTHON_VERSION: '3.11'                        # Python version for build environment
+  PYTHON_VERSION: '3.12'                        # Python version for build environment
 
   # === Infrastructure Paths ===
   INFRA_TEMPLATE_PATH: './infra/azuredeploy.json'
