@@ -11,7 +11,7 @@ app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 
 @app.route(route="random-photo", methods=["GET"])
 def random_photo(req: func.HttpRequest) -> func.HttpResponse:
-    logging.info("Python HTTP trigger: GetRandomPhoto")
+    logging.info("Python HTTP trigger: random_photo")
 
     try:
         conn_str = os.getenv("PHOTO_STORAGE_CONNECTION")
@@ -19,8 +19,7 @@ def random_photo(req: func.HttpRequest) -> func.HttpResponse:
 
         if not conn_str:
             return func.HttpResponse(
-                "PHOTO_STORAGE_CONNECTION not configured",
-                status_code=500
+                "PHOTO_STORAGE_CONNECTION not configured", status_code=500
             )
 
         # connect to storage
@@ -35,14 +34,25 @@ def random_photo(req: func.HttpRequest) -> func.HttpResponse:
         chosen = random.choice(blob_list)
         blob_client = container_client.get_blob_client(chosen)
 
-        # add a random query param to break caching
-        url_with_nonce = f"{blob_client.url}&_={random.randint(0, 999999)}"
+        # download blob content as bytes
+        downloader = blob_client.download_blob()
+        blob_bytes = downloader.readall()
 
-        # redirect
+        # try to guess content type from blob name
+        content_type = "image/jpeg"
+        if chosen.lower().endswith(".png"):
+            content_type = "image/png"
+        elif chosen.lower().endswith(".gif"):
+            content_type = "image/gif"
+        elif chosen.lower().endswith(".webp"):
+            content_type = "image/webp"
+
+        # return the image content
         return func.HttpResponse(
-            status_code=302,
+            body=blob_bytes,
+            status_code=200,
+            mimetype=content_type,
             headers={
-                "Location": url_with_nonce,
                 "Cache-Control": "no-cache, no-store, must-revalidate",
                 "Pragma": "no-cache",
                 "Expires": "0"
