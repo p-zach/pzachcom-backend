@@ -47,16 +47,21 @@ def random_photo(req: func.HttpRequest) -> func.HttpResponse:
         elif chosen.lower().endswith(".webp"):
             content_type = "image/webp"
 
-        # return the image content
+        headers = {
+            # cover browsers (max-age=0/no-cache/no-store), shared caches (s-maxage),
+            # and CDNs/proxies (Surrogate-Control) so the image is random every refresh.
+            "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0, s-maxage=0",
+            "Surrogate-Control": "no-store",
+            "Pragma": "no-cache",
+            "Expires": "0",
+            "Vary": "Accept-Encoding",
+        }
+
         return func.HttpResponse(
             body=blob_bytes,
             status_code=200,
             mimetype=content_type,
-            headers={
-                "Cache-Control": "no-cache, no-store, must-revalidate",
-                "Pragma": "no-cache",
-                "Expires": "0"
-            }
+            headers=headers
         )
 
     except Exception as e:
