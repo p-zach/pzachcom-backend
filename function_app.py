@@ -1,6 +1,7 @@
 import logging
 import os
 import random
+import datetime
 
 import azure.functions as func
 from azure.storage.blob import (
@@ -9,9 +10,9 @@ from azure.storage.blob import (
 
 app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 
-@app.route(route="random-photo", methods=["GET"])
+@app.route(route="photo-of-the-day", methods=["GET"])
 def random_photo(req: func.HttpRequest) -> func.HttpResponse:
-    logging.info("Python HTTP trigger: random_photo")
+    logging.info("Python HTTP trigger: photo-of-the-day")
 
     try:
         conn_str = os.getenv("PHOTO_STORAGE_CONNECTION")
@@ -31,7 +32,12 @@ def random_photo(req: func.HttpRequest) -> func.HttpResponse:
         if not blob_list:
             return func.HttpResponse("No photos found", status_code=404)
 
-        chosen = random.choice(blob_list)
+        # get a unique seed based on today's date
+        today = datetime.date.today()
+        seed = today.year * 366 + today.month * 31 + today.day
+        random_today = random.Random(seed)
+
+        chosen = random_today.choice(blob_list)
         blob_client = container_client.get_blob_client(chosen)
 
         # redirect
@@ -39,36 +45,6 @@ def random_photo(req: func.HttpRequest) -> func.HttpResponse:
             status_code=302,
             headers={"Location": blob_client.url}
         )
-
-        # download blob content as bytes
-        # downloader = blob_client.download_blob()
-        # blob_bytes = downloader.readall()
-
-        # # try to guess content type from blob name
-        # content_type = "image/jpeg"
-        # if chosen.lower().endswith(".png"):
-        #     content_type = "image/png"
-        # elif chosen.lower().endswith(".gif"):
-        #     content_type = "image/gif"
-        # elif chosen.lower().endswith(".webp"):
-        #     content_type = "image/webp"
-
-        # headers = {
-        #     # cover browsers (max-age=0/no-cache/no-store), shared caches (s-maxage),
-        #     # and CDNs/proxies (Surrogate-Control) so the image is random every refresh.
-        #     "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0, s-maxage=0",
-        #     "Surrogate-Control": "no-store",
-        #     "Pragma": "no-cache",
-        #     "Expires": "0",
-        #     "Vary": "Accept-Encoding",
-        # }
-
-        # return func.HttpResponse(
-        #     body=blob_bytes,
-        #     status_code=200,
-        #     mimetype=content_type,
-        #     headers=headers
-        # )
 
     except Exception as e:
         logging.error(f"Error: {e}")
