@@ -14,12 +14,12 @@ app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 
 @app.route(route="photo-of-the-day", methods=["GET"])
 def random_photo(req: func.HttpRequest) -> func.HttpResponse:
-    width = req.params.get('max_w', None)
-    height = req.params.get('max_h', None)
+    width = int(req.params.get('w', 0))
+    height = int(req.params.get('h', 0))
 
-    if width is not None and height is not None:
+    if width > 0 and height > 0:
         return func.HttpResponse(
-            "Cannot specify both max_w and max_h",
+            "Cannot specify both width and height",
             status_code=http.HTTPStatus.BAD_REQUEST
         )
 
@@ -65,7 +65,7 @@ def random_photo(req: func.HttpRequest) -> func.HttpResponse:
 
         # Encode to buffer
         buf = io.BytesIO()
-        img.save(buf, format="JPEG")
+        img.save(buf, format="JPEG", exif=img.info.get("exif"))
         buf.seek(0)
 
         # Return image directly
