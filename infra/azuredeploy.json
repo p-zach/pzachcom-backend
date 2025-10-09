@@ -162,6 +162,10 @@
                         {
                             "name": "PHOTO_STORAGE_CONNECTION",
                             "value": "[concat('@Microsoft.KeyVault(SecretUri=', reference(resourceId('Microsoft.KeyVault/vaults/secrets', parameters('keyVaultName'), parameters('photoConnectionStringSecretName')), '2019-09-01').secretUriWithVersion, ')')]"
+                        },
+                        {
+                            "name": "PHOTO_BLOB_URL",
+                            "value": "https://pzach.blob.core.windows.net/photos"
                         }
                     ],
                     "ftpsState": "FtpsOnly", 

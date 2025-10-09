@@ -1,12 +1,10 @@
 import logging
 import os
+import requests
 import random
 import datetime
 
 import azure.functions as func
-from azure.storage.blob import (
-    BlobServiceClient,
-)
 
 app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 
@@ -15,35 +13,31 @@ def random_photo(req: func.HttpRequest) -> func.HttpResponse:
     logging.info("Python HTTP trigger: photo-of-the-day")
 
     try:
-        conn_str = os.getenv("PHOTO_STORAGE_CONNECTION")
-        container_name = os.getenv("PHOTO_CONTAINER", "photos")
+        blob_url = os.getenv("PHOTO_BLOB_URL")
+        photo_json_url = f"{blob_url}/photos.json"
 
-        if not conn_str:
-            return func.HttpResponse(
-                "PHOTO_STORAGE_CONNECTION not configured", status_code=500
-            )
+        response = requests.get(photo_json_url)
+        response.raise_for_status()
+        
+        data = response.json()
+        
+        # Ensure the JSON has the expected structure
+        photos = data.get("photos", [])
+        if not photos:
+            raise ValueError("No photos found in JSON.")
 
-        # connect to storage
-        blob_service_client = BlobServiceClient.from_connection_string(conn_str)
-        container_client = blob_service_client.get_container_client(container_name)
-
-        # list blobs
-        blob_list = [b.name for b in container_client.list_blobs()]
-        if not blob_list:
-            return func.HttpResponse("No photos found", status_code=404)
-
-        # get a unique seed based on today's date
+        # Get a unique seed based on today's date
         today = datetime.date.today()
         seed = today.year * 366 + today.month * 31 + today.day
         random_today = random.Random(seed)
 
-        chosen = random_today.choice(blob_list)
-        blob_client = container_client.get_blob_client(chosen)
+        chosen = random_today.choice(photos)
+        photo_url = f"{blob_url}/{chosen}"
 
-        # redirect
+        # Redirect
         return func.HttpResponse(
             status_code=302,
-            headers={"Location": blob_client.url}
+            headers={"Location": photo_url}
         )
 
     except Exception as e:
