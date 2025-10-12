@@ -14,14 +14,8 @@ app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 
 @app.route(route="photo-of-the-day", methods=["GET"])
 def random_photo(req: func.HttpRequest) -> func.HttpResponse:
-    width = int(req.params.get('w', 0))
-    height = int(req.params.get('h', 0))
-
-    if width > 0 and height > 0:
-        return func.HttpResponse(
-            "Cannot specify both width and height",
-            status_code=http.HTTPStatus.BAD_REQUEST
-        )
+    max_width = req.params.get('max_w', None)
+    max_height = req.params.get('max_h', None)
 
     try:
         blob_url = os.getenv("PHOTO_BLOB_URL")
@@ -57,10 +51,15 @@ def random_photo(req: func.HttpRequest) -> func.HttpResponse:
         img = Image.open(io.BytesIO(response.content))
 
         # Resize if requested, while maintaining aspect ratio
-        if width or height:
+        if max_width or max_height:
+            # Set unset values to img value since img.thumbnail automatically preserves aspect ratio
+            if max_width is None:
+                max_width = img.width
+            if max_height is None:
+                max_height = img.height
+                
             img.thumbnail((
-                width or img.width * height / img.height, 
-                height or img.height * width / img.width
+                max_width, max_height
             ))
 
         # Encode to buffer
