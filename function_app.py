@@ -58,9 +58,7 @@ def random_photo(req: func.HttpRequest) -> func.HttpResponse:
             if max_height is None:
                 max_height = img.height
                 
-            img.thumbnail((
-                max_width, max_height
-            ))
+            img.thumbnail((int(max_width), int(max_height)))
 
         # Encode to buffer
         buf = io.BytesIO()
