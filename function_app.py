@@ -7,6 +7,7 @@ import io
 import requests
 from PIL import Image
 import http
+import json
 
 import azure.functions as func
 
@@ -18,18 +19,7 @@ def random_photo(req: func.HttpRequest) -> func.HttpResponse:
     max_height = req.params.get('max_h', None)
 
     try:
-        blob_url = os.getenv("PHOTO_BLOB_URL")
-        photo_json_url = f"{blob_url}/photos.json"
-
-        response = requests.get(photo_json_url)
-        response.raise_for_status()
-        
-        data = response.json()
-        
-        # Ensure the JSON has the expected structure
-        photos = data.get("photos", [])
-        if not photos:
-            raise ValueError("No photos found in JSON.")
+        blob_url, photos = get_photo_blob_json()
 
         # Get a unique seed based on today's date
         today = datetime.date.today()
@@ -37,7 +27,7 @@ def random_photo(req: func.HttpRequest) -> func.HttpResponse:
         random_today = random.Random(seed)
 
         # Choose a photo
-        chosen = random_today.choice(photos)
+        chosen = random_today.choice(photos)["name"]
         photo_url = f"{blob_url}/{chosen}"
 
         response = requests.get(photo_url)
@@ -74,3 +64,53 @@ def random_photo(req: func.HttpRequest) -> func.HttpResponse:
     except Exception as e:
         logging.error(f"Error: {e}")
         return func.HttpResponse(f"Internal error: {e}", status_code=500)
+
+@app.route(route="gallery-list", methods=["GET"])
+def gallery_list(req: func.HttpRequest) -> func.HttpResponse:
+    random_order = req.params.get('random_order', False)
+    max_photos = req.params.get('max_photos', 0)
+
+    try:
+        _, photos = get_photo_blob_json()
+
+        if random_order:
+            random.shuffle(photos)
+
+        if int(max_photos) > 0 and int(max_photos) < len(photos):
+            photos = photos[:int(max_photos)]
+
+        return func.HttpResponse(json.dumps(photos))
+    except ValueError as e:
+        return func.HttpResponse(f"Bad request: {e}", status_code=400)
+    except Exception as e:
+        logging.error(f"Error: {e}")
+        return func.HttpResponse(f"Internal error: {e}", status_code=500)
+
+def get_photo_blob_json() -> tuple:
+    """Gets the URL of the blob containing the photos and the list of photos in
+    the blob. A photo in the list consists of a JSON object with name, src, 
+    width, height, and alt fields.
+
+    Raises:
+        ValueError: If there are no photos in the JSON.
+
+    Returns:
+        tuple: (the blob URL, the list of photos)
+    """
+    blob_url = os.getenv("PHOTO_BLOB_URL")
+    photo_json_url = f"{blob_url}/photos.json"
+
+    response = requests.get(photo_json_url)
+    response.raise_for_status()
+    
+    data = response.json()
+    
+    # Ensure the JSON has the expected structure
+    photos = data.get("photos", [])
+    if not photos:
+        raise ValueError("No photos found in JSON.")
+
+    for photo in photos:
+        photo["src"] = f"{blob_url}/{photo["name"]}"
+
+    return blob_url, photos
